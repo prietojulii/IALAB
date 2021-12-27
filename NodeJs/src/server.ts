@@ -1,3 +1,9 @@
 import express from 'express';
 
-const app = express();//inciializamos un seridor http
+export async function startServer()
+{
+
+    const app = express(); //incializamos un seridor http
+    return app;
+};
+
