@@ -1,14 +1,13 @@
 import { startServer } from './server';
-//import { ApolloServer } from 'apollo-server-express' //permite tener disponible graphql
 
 async function main(){
     const port: number = 4000;
     const app = await startServer();
     app.listen(port);
     console.log("app running at ", port);
+    
 
 }
-
 
 main();
 
