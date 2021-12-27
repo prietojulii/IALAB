@@ -16,4 +16,3 @@ export async function startServer()
     apolloServer.applyMiddleware({app,path: '/graphql'});
     return app;
 };
-
