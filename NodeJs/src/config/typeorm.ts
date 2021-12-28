@@ -10,7 +10,7 @@ export async function connect() {
         password: environment.DB_PASSWORD,
         database: environment.DB_DATABASE,
         entities: [
-            path.join(__dirname,'../entity/**/**/.ts'), //dirname indica directorio actual, 
+            path.join(__dirname,'../entity/**/**.ts'), //dirname indica directorio actual, 
                                                         //y con path.join indico donde moverme
                                                         //(./../entity/%.ts)
         ],
