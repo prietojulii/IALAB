@@ -1,9 +1,9 @@
-import {InputType, Mutation, Resolver, Field, Arg, Query} from 'type-graphql';
+import {InputType, Mutation, Resolver, Field, Arg, Ctx, Query, UseMiddleware} from 'type-graphql';
 import { Book } from '../entity/book.entity';
 import { Author } from '../entity/author.entity';
 import {getRepository, Repository} from 'typeorm' 
 import {Length} from 'class-validator'
-
+import { isUser, IContext } from '../middlewares/user.middlewares';
 //Inputs:
   //"!" -> obligatorio
   //"?" -> opcionales
@@ -64,9 +64,15 @@ export class BookResolver{
 
 
 
-    @Mutation( () => Book )                               //parametro          //retorno
-    async createBook(  @Arg("input", ()=>BookInput) input: BookInput ): Promise<Book | undefined>
+    @Mutation( () => Book )                       
+    @UseMiddleware(isUser)                                                  //Parametros:
+    async createBook(  @Arg("input", ()=>BookInput) input: BookInput, //argumento: se carga explicitamente
+                       @Ctx() context: IContext                       //contexto-> se carga automaticamente
+                    ): Promise<Book | undefined> //retorno
     {
+        //imprimimos por consola la informacion del usuario
+        console.log(context.payload);
+
         try{
             const author: Author | undefined = await this.authorRepository.findOne(input.author);
             if(!author){ 
@@ -87,6 +93,7 @@ export class BookResolver{
 
 
     @Mutation( ()=> Book)
+    @UseMiddleware(isUser)
     async updateBookById( @Arg("input",()=>BookUpdateInput) input: BookUpdateInput,
                           @Arg("bookId", ()=>BookIdInput) bookId: BookIdInput 
                         ): Promise <Book | undefined>
@@ -108,6 +115,7 @@ export class BookResolver{
 
 
     @Mutation( ()=> Boolean)
+    @UseMiddleware(isUser)
     async deleteBook( @Arg("input",()=>BookIdInput) input: BookIdInput): Promise <Boolean>
     {
         try{

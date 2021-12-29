@@ -10,7 +10,9 @@ export async function startServer()
     const app = express(); //incializamos un seridor http
     
     const apolloServer = new ApolloServer({
-        schema: await buildSchema({resolvers: [AuthorResolver, BookResolver, UserResolver]})
+        schema: await buildSchema({resolvers: [AuthorResolver, BookResolver, UserResolver]}),
+        context: ({req,res})=>({req,res}),
+        
     });
     
     await apolloServer.start();

@@ -1,7 +1,9 @@
-import {InputType, Mutation, Resolver, Field, Arg, Query} from 'type-graphql';
+import {InputType, Mutation, Resolver, Field, Arg, Query, UseMiddleware} from 'type-graphql';
 import { Author } from '../entity/author.entity';
 import {getRepository, Repository} from 'typeorm' 
 import {Length} from 'class-validator'
+import { isUser } from '../middlewares/user.middlewares';
+
 
 // @ts-check
 //Creamos las INPUT de las consultas
@@ -48,6 +50,7 @@ export class AuthorResolver{
 
 
     @Mutation( () => Author )                               //parametro                 //retorno
+    @UseMiddleware(isUser)
     async createAuthor(  @Arg("input", ()=>AuthorInput) input: AuthorInput ): Promise <Author | undefined> 
     {
         try{
@@ -67,6 +70,7 @@ export class AuthorResolver{
     };
 
     @Mutation( ()=> Author)
+    @UseMiddleware(isUser)
     async updateAuthorById( @Arg("input",()=>AuthorUpdateInput) input: AuthorUpdateInput): Promise <Author | undefined>
     { 
         const authorExist = await this.authorRepository.findOne(input.id);
@@ -83,6 +87,7 @@ export class AuthorResolver{
 
     //TODO: no chequea si el author tiene libros existentes en la base de datos
     @Mutation( ()=> Boolean)
+    @UseMiddleware(isUser)
     async deleteAuthor( @Arg("input",()=>AuthorIdInput) input: AuthorIdInput): Promise <Boolean>
     {
         try{
