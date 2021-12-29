@@ -14,8 +14,8 @@ export class Book{
     @Column()
     title!: string
     
-    @Field(()=>Author)
-    @ManyToOne(()=> Author,author => author.books) //(target, relacion)
+    @Field(()=>Author)         //(target, relacion)   Cuando borro el autor se borran sus libros
+    @ManyToOne(()=> Author,author => author.books ,     {onDelete: 'CASCADE'})
     author!: Author
     
     @Field()

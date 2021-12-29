@@ -85,7 +85,6 @@ export class AuthorResolver{
         });//save actualiza el valor particuar y si no existe lo crea
     }
 
-    //TODO: no chequea si el author tiene libros existentes en la base de datos
     @Mutation( ()=> Boolean)
     @UseMiddleware(isUser)
     async deleteAuthor( @Arg("input",()=>AuthorIdInput) input: AuthorIdInput): Promise <Boolean>

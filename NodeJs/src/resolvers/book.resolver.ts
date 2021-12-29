@@ -84,7 +84,7 @@ export class BookResolver{
                 author: author,
             });
                                                                            //le carga al libro el enlace de su author
-            return await this.bookRepository.findOne(book.identifiers[0].id,   {relations: ['author']});
+            return await this.bookRepository.findOne(book.identifiers[0].id,   {relations: ['author', 'author.books']});
         }catch(e: any) {
             throw new Error(e.message);
         }
@@ -120,16 +120,13 @@ export class BookResolver{
     {
         try{
 
-            const bookExists = await this.bookRepository.findOne(input.id);
-            if(!bookExists){
-                const error = new Error("Book does not exists");
-                throw error;
+            const isDeleted = await this.bookRepository.delete(input.id);
+            if(isDeleted.affected === 0){ //no elimino nada ya sea porque no existia, etc
+                return false;
             }
-            await this.bookRepository.delete(input.id);
             return true;
         }catch(e: any){
             throw new Error(e.message);
-            return false;
         }
     
     }
@@ -141,7 +138,7 @@ export class BookResolver{
     {
         try{
 
-            return await this.bookRepository.find({relations: ['author']}); //devuelve un array de objetos Author
+            return await this.bookRepository.find({relations: ['author', 'author.books']}); //devuelve un array de objetos Author
         }catch(e: any){
             throw new Error(e);
         }
@@ -152,7 +149,7 @@ export class BookResolver{
     async getBookById(  @Arg("input", ()=>BookIdInput) input: BookIdInput ): Promise <Book | undefined>
     { //recibe un argumento AuthorId
         try{
-            const book = await this.bookRepository.findOne(input.id, {relations: ['author']});
+            const book = await this.bookRepository.findOne(input.id, {relations: ['author', 'author.books']});
             if(!book){
                const error = new Error('Book does not exists');
                throw error;
@@ -174,7 +171,7 @@ export class BookResolver{
         try{
 
             parsed.title = input.title;
-            parsed.author = await this.authorRepository.findOne(input.author, {relations: ['books']});
+            parsed.author = await this.authorRepository.findOne(input.author, {relations: ['books', 'author.books']});
             
             if(!parsed.author){
                 const error= new Error ("Error ID author");
