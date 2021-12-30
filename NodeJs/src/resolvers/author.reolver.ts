@@ -1,38 +1,11 @@
-import {InputType, Mutation, Resolver, Field, Arg, Query, UseMiddleware} from 'type-graphql';
+import {Mutation, Resolver, Arg, Query, UseMiddleware} from 'type-graphql';
 import { Author } from '../entity/author.entity';
-import {getRepository, Repository} from 'typeorm' 
-import {Length} from 'class-validator'
+import {getRepository, IsNull, Repository} from 'typeorm' 
 import { isUser } from '../middlewares/user.middlewares';
+import { AuthorIdInput, AuthorUpdateInput, AuthorInput } from './inputs.resolver';
+import { Book } from '../entity/book.entity';
 
 
-// @ts-check
-//Creamos las INPUT de las consultas
-
-@InputType()
-class AuthorInput{
-
-    @Field()
-    @Length(3,64)
-    fullName !: string
-} 
-
-@InputType()
-class AuthorUpdateInput{
-
-    @Field( ()=> Number)
-    id !: number //obligatorio
-
-    @Field()
-    @Length(3,64)
-    fullName ?: string //opcional
-} 
-
-@InputType()
-class AuthorIdInput{
-
-    @Field( ()=> Number)
-    id !: number
-} 
 
 
 //Creamos las  CONSULTAS y Mitaciones:
@@ -106,17 +79,21 @@ export class AuthorResolver{
 
 
     @Query(() => [Author])
-    async getAllAuthor(): Promise<Author[]>
-    {
-        try{
-            return await this.authorRepository.find({relations: ['books']}); //devuelve un array de objetos Author
+    @UseMiddleware(isUser)
+    async getAllAuthor(): Promise<Author[]> 
+    {   
+        try{             
+                                
+            return await this.authorRepository.find({relations: ['books','books.loan'],
+                                                     order: {fullName: 'ASC'} }); 
         }catch(e: any){
-            throw new Error(e);
+            throw new Error(e.message);
         }
     };
-
+    
 
     @Query( ()=> Author)
+    @UseMiddleware(isUser)
     async getAuthorById(  @Arg("input", ()=>AuthorIdInput) input: AuthorIdInput ): Promise <Author | undefined>
     { //recibe un argumento AuthorId
 

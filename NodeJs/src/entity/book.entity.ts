@@ -1,7 +1,7 @@
 import { ObjectType, Field } from 'type-graphql';
-import {Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, ManyToOne} from 'typeorm';
+import {Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, ManyToOne, JoinColumn,OneToOne} from 'typeorm';
 import { Author } from './author.entity';
-
+import { Loan } from './loan.entity';
 
 @ObjectType()
 @Entity() //decriptor para que extienda de la clase entity y de esta forma typeormlo reconoce como entidad
@@ -14,13 +14,18 @@ export class Book{
     @Column()
     title!: string
     
-    @Field(()=>Author)         //(target, relacion)   Cuando borro el autor se borran sus libros
-    @ManyToOne(()=> Author,author => author.books ,     {onDelete: 'CASCADE'})
+    @Field(() => Author)
+    @ManyToOne(() => Author, author => author.books, { onDelete: 'CASCADE' })
     author!: Author
     
     @Field()
     @CreateDateColumn({type: 'timestamp'})
     createdAt!: string
+ 
+    @Field(()=> Loan, {nullable: true})
+    @OneToOne(()=> Loan,loan => loan.book , {nullable: true})
+    @JoinColumn()
+    loan !: Loan; //prestamo asociado
 }
 /*
 . El signo de exclamación le dice al lector del código: ESTO NO PUEDE SER NULO (undefined)

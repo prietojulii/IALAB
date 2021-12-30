@@ -1,42 +1,10 @@
 import {InputType, Mutation, Resolver, Field, Arg, Ctx, Query, UseMiddleware} from 'type-graphql';
 import { Book } from '../entity/book.entity';
 import { Author } from '../entity/author.entity';
-import {getRepository, Repository} from 'typeorm' 
-import {Length} from 'class-validator'
+import {getRepository, IsNull, Repository} from 'typeorm' 
 import { isUser, IContext } from '../middlewares/user.middlewares';
-//Inputs:
-  //"!" -> obligatorio
-  //"?" -> opcionales
+import { BookIdInput, BookInput, BookUpdateInput } from './inputs.resolver';
 
-@InputType()
-class BookIdInput{
-
-    @Field( ()=> Number)
-    id !: number
-} 
-
-@InputType()
-class BookInput{
-    
-    @Field()
-    @Length(3,64)
-    title !: string;
-    
-    @Field() 
-    author !: number;
-}
-
-@InputType()
-class BookUpdateInput{ 
-
-    @Field( ()=> String, {nullable: true})
-    @Length(3,64)
-    title ?: string;
-
-    @Field(()=> Number, {nullable:true}) 
-    author ?: number;
-
-}
 
 class BookParse{ 
  
@@ -45,6 +13,7 @@ class BookParse{
 
     @Field(()=> Author, {nullable:true})
     author ?: Author;
+
 }
 
 //Creamos una consulta:
@@ -54,7 +23,6 @@ export class BookResolver{
     
     bookRepository :  Repository<Book>;
     authorRepository :  Repository<Author>;
-
 
     constructor()
     {
@@ -134,18 +102,22 @@ export class BookResolver{
 
 
     @Query(() => [Book])
+    @UseMiddleware(isUser)  
     async getAllBooks(): Promise<Book[]>
     {
         try{
-
-            return await this.bookRepository.find({relations: ['author', 'author.books']}); //devuelve un array de objetos Author
+            //FILTRO solo los que no estan prestados
+            return await this.bookRepository.find({where: {loan: IsNull() },
+                                                    relations: ['author', 'author.books', 'loan'],
+                                                    order: {title: 'ASC'}}); 
         }catch(e: any){
-            throw new Error(e);
+            throw new Error(e.message);
         }
     };
 
 
     @Query( ()=> Book)
+    @UseMiddleware(isUser)  
     async getBookById(  @Arg("input", ()=>BookIdInput) input: BookIdInput ): Promise <Book | undefined>
     { //recibe un argumento AuthorId
         try{
@@ -156,10 +128,12 @@ export class BookResolver{
             }
             return book;
         }catch(e: any){
-            throw new Error(e);
+            throw new Error(e.message);
         }
         
     };
+
+    
 
     /**
      * Convierte un objeto de tipo BookUpdateInput a BookParse, de modo que los campos "author" coincidan

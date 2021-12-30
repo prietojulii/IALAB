@@ -1,41 +1,11 @@
-import {Resolver, Mutation, InputType, ObjectType, Field, Arg, Query} from 'type-graphql'
+import {Resolver, Mutation, ObjectType, Field, Arg, Query} from 'type-graphql'
 import { Repository, getRepository } from 'typeorm'
 import {User} from '../entity/user.entity'
-import {Length, IsEmail} from 'class-validator'
 import { hash, compareSync} from 'bcryptjs'
 import {sign} from 'jsonwebtoken'
 import {environment} from '../config/environment'
-
-@InputType()
-class registerInput{
-
-    @Field()
-    @Length(3,64)
-    fullName!: string
-
-    @Field()
-    @IsEmail()
-    email!: string
-    
-    @Field()
-    @Length(8,254)
-    password!: string
-
-
-}
-
-@InputType()
-class LoginInput{
-
-    @Field()
-    @IsEmail()
-    email!: string
-    
-    @Field()
-    @Length(8,254)
-    password!: string
-}
-
+import { Book } from '../entity/book.entity'
+import { registerInput, LoginInput } from './inputs.resolver'
 
 @ObjectType()
 class LoginResponse{
@@ -56,9 +26,11 @@ class LoginResponse{
 export class UserResolver{
 
     userRepository: Repository<User>;
+    bookRepository: Repository<Book>;
 
     constructor(){
         this.userRepository = getRepository(User);
+        this.bookRepository  = getRepository(Book);
     }
 
     @Mutation(()=>User)
@@ -88,7 +60,8 @@ export class UserResolver{
 
 
     @Mutation( () => LoginResponse)
-    async login( @Arg("input", ()=> LoginInput) input: LoginInput): Promise <LoginResponse>{
+    async login( @Arg("input", ()=> LoginInput) input: LoginInput): Promise <LoginResponse>
+    {
 
         try{
             const { email, password} = input;

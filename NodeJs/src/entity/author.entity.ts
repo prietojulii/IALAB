@@ -14,9 +14,9 @@ export class Author{
     @Column()
     fullName !: string 
     
-    @Field(()=> [Book] , {nullable: true})
-    @OneToMany(()=> Book, book => book.author, {nullable: true}) //(target, relacion)
-    books !: Book[]
+    @Field(() => [Book], { nullable: true })
+    @OneToMany(() => Book, book => book.author, { nullable: true })
+    books!: Book[]
     
     @Field(()=>String)
     @CreateDateColumn({type: 'timestamp'})
