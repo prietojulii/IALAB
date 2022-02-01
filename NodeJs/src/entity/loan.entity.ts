@@ -20,6 +20,6 @@ export class Loan{
     
     @Field()
     @CreateDateColumn({type: 'timestamp'})
-    DateLoad!: string
+    dateLoad!: Date
 
 } 

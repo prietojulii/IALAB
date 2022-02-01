@@ -92,3 +92,13 @@ export class AuthorIdInput{
     @Field( ()=> Number)
     id !: number
 } 
+
+@InputType()
+export class UserPassInput{
+
+    
+    @Field()
+    @Length(8,254)
+    password !: string
+
+}

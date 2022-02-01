@@ -1,8 +1,8 @@
-import {InputType, Mutation, Resolver, Field, Arg, Ctx, Query, UseMiddleware} from 'type-graphql';
+import { Mutation, Resolver, Field, Arg, Ctx, Query, UseMiddleware} from 'type-graphql';
 import { Book } from '../entity/book.entity';
 import { Author } from '../entity/author.entity';
 import {getRepository, IsNull, Repository} from 'typeorm' 
-import { isUser, IContext } from '../middlewares/user.middlewares';
+import { isUser, IContext, isAdmin} from '../middlewares/user.middlewares';
 import { BookIdInput, BookInput, BookUpdateInput } from './inputs.resolver';
 
 
@@ -33,7 +33,7 @@ export class BookResolver{
 
 
     @Mutation( () => Book )                       
-    @UseMiddleware(isUser)                                                  //Parametros:
+    @UseMiddleware(isAdmin)                                                  //Parametros:
     async createBook(  @Arg("input", ()=>BookInput) input: BookInput, //argumento: se carga explicitamente
                        @Ctx() context: IContext                       //contexto-> se carga automaticamente
                     ): Promise<Book | undefined> //retorno
@@ -61,7 +61,7 @@ export class BookResolver{
 
 
     @Mutation( ()=> Book)
-    @UseMiddleware(isUser)
+    @UseMiddleware(isAdmin)
     async updateBookById( @Arg("input",()=>BookUpdateInput) input: BookUpdateInput,
                           @Arg("bookId", ()=>BookIdInput) bookId: BookIdInput 
                         ): Promise <Book | undefined>
@@ -83,7 +83,7 @@ export class BookResolver{
 
 
     @Mutation( ()=> Boolean)
-    @UseMiddleware(isUser)
+    @UseMiddleware(isAdmin)
     async deleteBook( @Arg("input",()=>BookIdInput) input: BookIdInput): Promise <Boolean>
     {
         try{
@@ -102,8 +102,8 @@ export class BookResolver{
 
 
     @Query(() => [Book])
-    @UseMiddleware(isUser)  
-    async getAllBooks(): Promise<Book[]>
+    @UseMiddleware(isUser)
+    async getAllBooksAvailable(): Promise<Book[]>
     {
         try{
             //FILTRO solo los que no estan prestados
@@ -114,6 +114,21 @@ export class BookResolver{
             throw new Error(e.message);
         }
     };
+
+
+    @Query(() => [Book])
+    @UseMiddleware(isAdmin)
+    async getAllBooks(): Promise<Book[]>
+    {
+        try{
+            //FILTRO solo los que no estan prestados
+            return await this.bookRepository.find({relations: ['author', 'author.books', 'loan'],
+                                                    order: {title: 'ASC'}}); 
+        }catch(e: any){
+            throw new Error(e.message);
+        }
+    };
+
 
 
     @Query( ()=> Book)

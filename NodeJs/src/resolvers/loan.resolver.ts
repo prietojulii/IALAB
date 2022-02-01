@@ -5,7 +5,7 @@ import { isUser, IContext } from '../middlewares/user.middlewares';
 import { User } from '../entity/user.entity';
 import { Loan } from '../entity/loan.entity';
 import {BookIdInput} from './inputs.resolver';
-
+import {timeLimit} from '../admin/administrator.admin'
 
 
 @Resolver() 
@@ -14,7 +14,6 @@ export class LoanResolver{
     userRepository: Repository<User>;
     loanRepository: Repository<Loan>;
     LimitResivedBooks: number ;
-    timeLimit: Number;
 
     constructor()
     {
@@ -22,7 +21,6 @@ export class LoanResolver{
         this.userRepository = getRepository(User);
         this.loanRepository = getRepository(Loan);
         this.LimitResivedBooks = 3;
-        this.timeLimit = 604800000; //una semana en milisegundos
     };
 
     @Mutation( () => Loan)
@@ -90,8 +88,10 @@ export class LoanResolver{
                 throw error;
             }
             //comprobamos Si paso el limite de tiempo de prestamo
-            if (Number(loan.DateLoad) - Date.now() > this.timeLimit){
-                alert("You received a fine for exceeding the time limit");
+            const time = Number(loan.dateLoad) - Date.now();
+            const timeHs = time*1000*60*60;
+            if ( time > timeLimit){
+                alert("You received a fine for exceeding the time limit for "+timeHs+" hours");
             }
             //borramos el libro
             await this.loanRepository.delete(loan.id);

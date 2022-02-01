@@ -1,7 +1,7 @@
 import {Mutation, Resolver, Arg, Query, UseMiddleware} from 'type-graphql';
 import { Author } from '../entity/author.entity';
 import {getRepository, IsNull, Repository} from 'typeorm' 
-import { isUser } from '../middlewares/user.middlewares';
+import { isUser, isAdmin } from '../middlewares/user.middlewares';
 import { AuthorIdInput, AuthorUpdateInput, AuthorInput } from './inputs.resolver';
 import { Book } from '../entity/book.entity';
 
@@ -23,7 +23,7 @@ export class AuthorResolver{
 
 
     @Mutation( () => Author )                               //parametro                 //retorno
-    @UseMiddleware(isUser)
+    @UseMiddleware(isAdmin)
     async createAuthor(  @Arg("input", ()=>AuthorInput) input: AuthorInput ): Promise <Author | undefined> 
     {
         try{
@@ -43,7 +43,7 @@ export class AuthorResolver{
     };
 
     @Mutation( ()=> Author)
-    @UseMiddleware(isUser)
+    @UseMiddleware(isAdmin)
     async updateAuthorById( @Arg("input",()=>AuthorUpdateInput) input: AuthorUpdateInput): Promise <Author | undefined>
     { 
         const authorExist = await this.authorRepository.findOne(input.id);
@@ -59,7 +59,7 @@ export class AuthorResolver{
     }
 
     @Mutation( ()=> Boolean)
-    @UseMiddleware(isUser)
+    @UseMiddleware(isAdmin)
     async deleteAuthor( @Arg("input",()=>AuthorIdInput) input: AuthorIdInput): Promise <Boolean>
     {
         try{
@@ -84,7 +84,7 @@ export class AuthorResolver{
     {   
         try{             
                                 
-            return await this.authorRepository.find({relations: ['books','books.loan'],
+            return await this.authorRepository.find({relations: ['books','books.loan'] ,
                                                      order: {fullName: 'ASC'} }); 
         }catch(e: any){
             throw new Error(e.message);
